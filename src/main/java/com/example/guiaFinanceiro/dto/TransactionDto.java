@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,9 +23,9 @@ public class TransactionDto {
 
     private LocalDate date;
 
-    private Account sourceAccount;
+    private UUID sourceAccount;
 
-    private Account destinationAccount;
+    private UUID destinationAccount;
 
-    private CreditCard creditCard;
+    private UUID creditCardId;
 }

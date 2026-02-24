@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,6 +20,6 @@ public class InvoiceDto {
 
     private boolean paid;
 
-    private CreditCard creditCard;
+    private UUID creditCardId;
 
 }

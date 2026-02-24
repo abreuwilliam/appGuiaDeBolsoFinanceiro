@@ -4,6 +4,7 @@ import com.example.guiaFinanceiro.dto.InvoiceDto;
 import com.example.guiaFinanceiro.service.InvoiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class invoiceController {
     private InvoiceService invoiceService;
 
+    @PostMapping
     public ResponseEntity<InvoiceDto> postInvoice(InvoiceDto invoiceDto){
         InvoiceDto postInvoice = invoiceService.createInvoice(invoiceDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(postInvoice);
