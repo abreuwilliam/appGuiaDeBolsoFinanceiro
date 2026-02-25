@@ -10,6 +10,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
 @Service
 public class AccountService {
 
@@ -33,6 +36,14 @@ public class AccountService {
             return AccountMapper.toDto(savedAccount);
         }catch (Exception e) {
             throw new RuntimeException("Erro ao salvar a conta: " + e.getMessage());
+        }
+    }
+    @Transactional
+    public BigDecimal findBalanceAccount(UUID userId) {
+        try {
+            return accountRepository.sumBalanceByUserId(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao somar saldos do usuário: " + e.getMessage());
         }
     }
 }

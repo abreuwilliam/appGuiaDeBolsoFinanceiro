@@ -11,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     Optional<Invoice> findByCreditCardIdAndReferenceMonth(UUID creditCardId, LocalDate referenceMonth);
+    Optional<Invoice> findByCreditCardId(UUID creditCardId);
 }
