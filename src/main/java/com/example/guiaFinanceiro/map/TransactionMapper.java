@@ -14,9 +14,17 @@ public class TransactionMapper {
         dto.setAmount(transaction.getAmount());
         dto.setType(transaction.getType());
         dto.setDate(transaction.getDate());
-        dto.setSourceAccount(transaction.getSourceAccount());
-        dto.setDestinationAccount(transaction.getDestinationAccount());
-        dto.setCreditCard(transaction.getCreditCard());
+        if (transaction.getSourceAccount() != null) {
+            dto.setSourceAccount(transaction.getSourceAccount().getId());
+        }
+
+        if (transaction.getDestinationAccount() != null) {
+            dto.setDestinationAccount(transaction.getDestinationAccount().getId());
+        }
+
+        if (transaction.getCreditCard() != null) {
+            dto.setCreditCardId(transaction.getCreditCard().getId());
+        }
 
         return dto;
     }

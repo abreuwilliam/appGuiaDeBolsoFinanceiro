@@ -2,6 +2,7 @@ package com.example.guiaFinanceiro.controller;
 
 import com.example.guiaFinanceiro.dto.CreditCardDto;
 import com.example.guiaFinanceiro.service.CreditCardService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/CreditCard")
 public class CreditCardController {
+    @Autowired
     private CreditCardService creditCardService;
 
     @PostMapping

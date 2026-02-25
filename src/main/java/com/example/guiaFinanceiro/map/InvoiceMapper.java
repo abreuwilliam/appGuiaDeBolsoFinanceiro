@@ -8,7 +8,7 @@ public class InvoiceMapper {
     if(invoice == null) return null;
     InvoiceDto invoiceDto = new InvoiceDto();
     invoiceDto.setPaid(invoice.isPaid());
-    invoiceDto.setCreditCard(invoice.getCreditCard());
+    invoiceDto.setCreditCardId(invoice.getCreditCard().getId());
     invoiceDto.setReferenceMonth(invoice.getReferenceMonth());
     invoiceDto.setTotalAmount(invoice.getTotalAmount());
     return invoiceDto;

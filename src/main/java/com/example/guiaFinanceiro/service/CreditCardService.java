@@ -6,6 +6,7 @@ import com.example.guiaFinanceiro.entites.Users;
 import com.example.guiaFinanceiro.map.CreditCardMapper;
 import com.example.guiaFinanceiro.repository.CreditCardRepository;
 import com.example.guiaFinanceiro.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ public class CreditCardService {
     @Autowired
     private UserRepository userRepository;
 
+    @Transactional
     public CreditCardDto createCreditCard(CreditCardDto creditCardDto) {
         Users user = userRepository.findById(creditCardDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));

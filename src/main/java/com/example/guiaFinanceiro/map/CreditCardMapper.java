@@ -11,7 +11,7 @@ public class CreditCardMapper {
         creditCardDto.setLimitAmount(creditCard.getLimitAmount());
         creditCardDto.setName(creditCard.getName());
         creditCardDto.setAvailableLimit(creditCard.getAvailableLimit());
-        creditCardDto.setUsers(creditCard.getUsers());
+        creditCardDto.setUserId(creditCard.getUsers().getId());
         return creditCardDto;
     }
 }
