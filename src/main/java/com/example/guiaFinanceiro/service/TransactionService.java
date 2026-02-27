@@ -37,6 +37,7 @@ public class TransactionService {
         transaction.setAmount(transactionDto.getAmount());
         transaction.setDate(transactionDto.getDate());
         transaction.setType(transactionDto.getType());
+        transaction.setCategory(transactionDto.getCategory());
         transaction.setDescription(transactionDto.getDescription());
 
 
@@ -117,6 +118,4 @@ public class TransactionService {
             throw new RuntimeException("erro ao processar gasto cartao " + e.getMessage());
         }
     }
-}//../../src/api/api"
-//    /purchase/gastoTotal/{userId}
-//        /purchase/diasSemGasto/{userId}
+}

@@ -1,7 +1,8 @@
 package com.example.guiaFinanceiro.entites;
 
 public enum TransactionCategory {
-
+    DEPOSITO,
+    ENTRECONTAS,
     ALIMENTACAO,
     SUPERMERCADO,
     RESTAURANTE,

@@ -8,6 +8,7 @@ public class AccountMapper {
         if (account == null) return null;
 
         AccountDto dto = new AccountDto();
+        dto.setId(account.getId());
         dto.setBalance(account.getBalance());
         dto.setName(account.getName());
         dto.setType(account.getType());

@@ -18,7 +18,7 @@ public class transactionController {
     private TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<TransactionDto> postTransaction(TransactionDto transactionDto){
+    public ResponseEntity<TransactionDto> postTransaction(@RequestBody TransactionDto transactionDto){
         TransactionDto creatTransaction = transactionService.createTransaction(transactionDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(creatTransaction);
     }
@@ -42,7 +42,6 @@ public class transactionController {
     }
 
 
-    // 🟣 Gasto em Cartão
     @GetMapping("/gastoCartao/{userId}")
     public ResponseEntity<BigDecimal> getGastoCartao(
             @PathVariable UUID userId) {
@@ -50,4 +49,5 @@ public class transactionController {
         BigDecimal total = transactionService.getGastoCartao(userId);
         return ResponseEntity.ok(total);
     }
+
 }

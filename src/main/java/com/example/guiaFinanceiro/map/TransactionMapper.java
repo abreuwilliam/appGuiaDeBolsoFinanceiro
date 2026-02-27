@@ -13,6 +13,7 @@ public class TransactionMapper {
         dto.setDescription(transaction.getDescription());
         dto.setAmount(transaction.getAmount());
         dto.setType(transaction.getType());
+        dto.setCategory(transaction.getCategory());
         dto.setDate(transaction.getDate());
         if (transaction.getSourceAccount() != null) {
             dto.setSourceAccount(transaction.getSourceAccount().getId());

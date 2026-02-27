@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
+
     @Query(value = "SELECT COALESCE(SUM(t.AMOUNT), 0) " +
             "FROM TRANSACTION t " +
             "WHERE (t.SOURCE_ACCOUNT_ID IN (SELECT a.ID FROM ACCOUNT a WHERE a.USERS_ID = :userId) " +
@@ -34,7 +35,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "FROM TRANSACTION t " +
             "INNER JOIN ACCOUNT acc ON t.SOURCE_ACCOUNT_ID = acc.ID " +
             "WHERE CAST(acc.USERS_ID AS VARCHAR) = CAST(:userId AS VARCHAR) " +
-            "AND t.CREDIT_CARD_ID IS NULL " + // 🎯 O pulo do gato: ignora se tiver cartão
+            "AND t.CREDIT_CARD_ID IS NULL " +
             "AND MONTH(t.DATE) = MONTH(CURRENT_DATE()) " +
             "AND YEAR(t.DATE) = YEAR(CURRENT_DATE())",
             nativeQuery = true)
@@ -49,4 +50,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "AND YEAR(t.DATE) = YEAR(CURRENT_DATE())",
             nativeQuery = true)
     BigDecimal sumGastoCartaoByUserId(@Param("userId") UUID userId);
+
+    @Query(value = "SELECT SUM(t.amount) FROM TRANSACTION t " +
+            "INNER JOIN ACCOUNT a ON t.destination_account_id = a.id " +
+            "WHERE a.users_id = :userId " +
+            "AND (t.type = 'INCOME' OR t.type = 'DEPOSIT') " +
+            "AND YEAR(t.date) = YEAR(CURRENT_DATE()) " +
+            "AND MONTH(t.date) = MONTH(CURRENT_DATE())",
+            nativeQuery = true)
+    Double getRendaMensalPorUsuario(@Param("userId") UUID userId);
 }

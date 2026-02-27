@@ -2,6 +2,7 @@ package com.example.guiaFinanceiro.dto;
 
 import com.example.guiaFinanceiro.entites.Account;
 import com.example.guiaFinanceiro.entites.CreditCard;
+import com.example.guiaFinanceiro.entites.TransactionCategory;
 import com.example.guiaFinanceiro.entites.TransactionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ public class TransactionDto {
     private BigDecimal amount;
 
     private TransactionType type;
+
+    private TransactionCategory category;
 
     private LocalDate date;
 

@@ -16,6 +16,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class AccountDto {
+   private  UUID id;
     private String name;
     private AccountType type;
     private BigDecimal balance;
