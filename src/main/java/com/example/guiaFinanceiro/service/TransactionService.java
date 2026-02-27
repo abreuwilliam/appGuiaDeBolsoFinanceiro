@@ -40,24 +40,28 @@ public class TransactionService {
         transaction.setCategory(transactionDto.getCategory());
         transaction.setDescription(transactionDto.getDescription());
 
-
         if (transactionDto.getCreditCardId() != null) {
-            CreditCard creditCard = creditCardRepository.findById(transactionDto.getCreditCardId())
-                    .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
+            // Log para debug (verifique no console do Spring)
+            System.out.println("Buscando cartão com ID: " + transactionDto.getCreditCardId());
 
-            Invoice invoice = invoiceRepository.findByCreditCardId(creditCard.getId()).orElseThrow(() -> new RuntimeException("fatura não encontrado"));
+            CreditCard creditCard = creditCardRepository.findById(transactionDto.getCreditCardId())
+                    .orElseThrow(() -> new RuntimeException("Cartão com ID " + transactionDto.getCreditCardId() + " não encontrado no banco."));
+
+            // Aqui usamos o método que criamos anteriormente
+            Invoice invoice = invoiceRepository.findByCreditCardIdAndPaidFalse(creditCard.getId())
+                    .orElseThrow(() -> new RuntimeException("Fatura aberta não encontrada para o cartão: " + creditCard.getName()));
 
             invoice.setTotalAmount(invoice.getTotalAmount().add(transactionDto.getAmount()));
+
             BigDecimal novoLimite = creditCard.getAvailableLimit().subtract(transactionDto.getAmount());
 
             if (novoLimite.compareTo(BigDecimal.ZERO) < 0) {
-                throw new RuntimeException("Limite insuficiente! Operação não realizada. Limite atual: R$ " +
-                        creditCard.getAvailableLimit() + ", Valor solicitado: R$ " + transactionDto.getAmount());
+                throw new RuntimeException("Limite insuficiente! Limite atual: R$ " + creditCard.getAvailableLimit());
             }
 
-// Se passou na validação, atualiza o limite
             creditCard.setAvailableLimit(novoLimite);
             creditCardRepository.save(creditCard);
+            invoiceRepository.save(invoice); // Importante salvar a fatura atualizada
 
             transaction.setCreditCard(creditCard);
         }
@@ -89,6 +93,7 @@ public class TransactionService {
             throw new RuntimeException("Erro ao processar transação: " + e.getMessage());
         }
     }
+    @Transactional
     public BigDecimal purchaseGastoTotal(UUID userId){
         try {
             return transactionRepository.findTotalDebitsByUserId(userId);
@@ -96,6 +101,7 @@ public class TransactionService {
             throw new RuntimeException("erro ao processar valores total " + e.getMessage());
         }
     }
+    @Transactional
     public Integer GetDiasSemGastos(UUID userId){
         try {
             return transactionRepository.countDaysWithoutExpenses(userId);
@@ -103,6 +109,7 @@ public class TransactionService {
             throw new RuntimeException("erro ao processar dias " + e.getMessage());
         }
     }
+    @Transactional
     public BigDecimal getGastoConta(UUID userId) {
         try {
         return transactionRepository.sumGastoContaByUserId(userId);
@@ -110,12 +117,20 @@ public class TransactionService {
             throw new RuntimeException("erro ao processar gasto conta " + e.getMessage());
         }
     }
-
+    @Transactional
     public BigDecimal getGastoCartao(UUID userId) {
         try {
         return transactionRepository.sumGastoCartaoByUserId(userId);
         } catch (Exception e) {
             throw new RuntimeException("erro ao processar gasto cartao " + e.getMessage());
+        }
+    }
+    @Transactional
+    public Double GetRendaMansal(UUID userID){
+        try {
+            return transactionRepository.getRendaMensalPorUsuario(userID);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("erro ao processar renda mensal " + e.getMessage());
         }
     }
 }

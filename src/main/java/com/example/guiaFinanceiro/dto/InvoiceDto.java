@@ -18,6 +18,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class InvoiceDto {
 
+    private UUID id;
+
     private LocalDate referenceMonth;
 
     private BigDecimal totalAmount;

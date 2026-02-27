@@ -35,6 +35,7 @@ public class accountController {
         List<AccountDto> contas = accountService.findByUser(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(contas);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         accountService.deleteAccount(id);

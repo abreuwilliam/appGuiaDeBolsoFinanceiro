@@ -66,6 +66,7 @@ public class AccountService {
         }
         accountRepository.deleteById(accountId);
     }
+
     @Transactional
     public AccountDto updateAccountPartially(UUID id, AccountDto data) {
         // Busca a conta ou lança erro se não existir

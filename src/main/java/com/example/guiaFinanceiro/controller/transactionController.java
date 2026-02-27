@@ -50,4 +50,10 @@ public class transactionController {
         return ResponseEntity.ok(total);
     }
 
+    @GetMapping("/rendaMensal/{userId}")
+    public ResponseEntity<Double> getRendaMensal(@Valid @PathVariable UUID userId){
+        Double rendaMensal = transactionService.GetRendaMansal(userId);
+        return ResponseEntity.ok(rendaMensal);
+    }
+
 }

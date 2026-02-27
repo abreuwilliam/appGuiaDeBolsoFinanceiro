@@ -13,6 +13,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class CreditCardDto {
+    private UUID id;
+
     private String name;
 
     private BigDecimal limitAmount;

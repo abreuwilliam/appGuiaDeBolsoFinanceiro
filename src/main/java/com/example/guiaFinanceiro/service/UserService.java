@@ -7,6 +7,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
 
@@ -23,5 +25,8 @@ public class UserService {
         // Busca o usuário. Se não achar, lança uma exceção.
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o e-mail: " + email));
+    }
+    public Users findById(UUID id) {
+        return userRepository.findById(id).orElse(null);
     }
 }
