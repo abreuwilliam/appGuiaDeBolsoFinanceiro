@@ -34,46 +34,38 @@ public class InvoiceService {
 
     @Autowired
     private TransactionRepository transactionRepository;
-
     @Transactional
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
-
-        CreditCard creditCard = creditCardRepository.findById(invoiceDto.getCreditCardId())
-                .orElseThrow(() ->
-                        new RuntimeException("Cartão não encontrado: " + invoiceDto.getCreditCardId())
-                );
-
-        Optional<Invoice> existingInvoice =
-                invoiceRepository.findByCreditCardIdAndReferenceMonth(
-                        creditCard.getId(),
-                        invoiceDto.getReferenceMonth()
-                );
-
         Invoice invoice;
 
-        if (existingInvoice.isPresent()) {
+        if (invoiceDto.getCreditCardId() != null) {
+            CreditCard creditCard = creditCardRepository.findById(invoiceDto.getCreditCardId())
+                    .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
 
-            invoice = existingInvoice.get();
+            Optional<Invoice> existingInvoice = invoiceRepository.findByCreditCardIdAndReferenceMonth(
+                    creditCard.getId(), invoiceDto.getReferenceMonth());
 
-            if (invoice.isPaid()) {
-                throw new RuntimeException("Fatura já está paga. Não é possível adicionar valores.");
+            if (existingInvoice.isPresent()) {
+                invoice = existingInvoice.get();
+                if (invoice.isPaid()) throw new RuntimeException("Fatura já paga!");
+                invoice.setTotalAmount(invoice.getTotalAmount().add(invoiceDto.getTotalAmount()));
+            } else {
+                invoice = new Invoice();
+                invoice.setCreditCard(creditCard);
+                invoice.setReferenceMonth(invoiceDto.getReferenceMonth().withDayOfMonth(1));
+                invoice.setTotalAmount(invoiceDto.getTotalAmount());
+                invoice.setPaid(false);
+
+                creditCard.setAvailableLimit(creditCard.getAvailableLimit().subtract(invoiceDto.getTotalAmount()));
             }
-
-            invoice.setTotalAmount(
-                    invoice.getTotalAmount().add(invoiceDto.getTotalAmount())
-            );
-
         } else {
-
+            // 2. LÓGICA DE FATURA MANUAL (Aluguel, Luz, etc)
             invoice = new Invoice();
-            invoice.setCreditCard(creditCard);
-            LocalDate normalized = invoiceDto.getReferenceMonth().withDayOfMonth(1);
-            invoice.setReferenceMonth(normalized);
             invoice.setTotalAmount(invoiceDto.getTotalAmount());
+            invoice.setReferenceMonth(invoiceDto.getReferenceMonth() != null ?
+                    invoiceDto.getReferenceMonth().withDayOfMonth(1) : LocalDate.now().withDayOfMonth(1));
             invoice.setPaid(false);
 
-            creditCard.setAvailableLimit(creditCard.getAvailableLimit().subtract
-                    (invoiceDto.getTotalAmount()));
         }
 
         Invoice saved = invoiceRepository.save(invoice);
@@ -100,7 +92,8 @@ public class InvoiceService {
         Transaction paymentTransaction = new Transaction();
         paymentTransaction.setAmount(invoice.getTotalAmount());
         paymentTransaction.setDate(LocalDate.now());
-        paymentTransaction.setType(TransactionType.EXPENSE); // Ou um tipo específico 'PAYMENT'
+        paymentTransaction.setType(TransactionType.EXPENSE);
+        paymentTransaction.setCategory(TransactionCategory.PAGAMENTO_FATURA);// Ou um tipo específico 'PAYMENT'
         paymentTransaction.setDescription("Pagamento fatura: " + invoice.getCreditCard().getName());
         paymentTransaction.setSourceAccount(account); // A conta que pagou
 
@@ -149,5 +142,32 @@ public class InvoiceService {
                 .orElseThrow(() -> new RuntimeException("Nenhuma fatura aberta encontrada para este cartão."));
 
         return InvoiceMapper.toDto(invoice);
+    }
+    @Transactional
+    public void deleteInvoice(UUID invoiceId) {
+        if (!invoiceRepository.existsById(invoiceId)) {
+            throw new RuntimeException("Conta não encontrada para o ID: " + invoiceId);
+        }
+        invoiceRepository.deleteById(invoiceId);
+    }
+
+    @Transactional
+    public InvoiceDto updateInvoicePartially(UUID id, InvoiceDto data) {
+
+        Invoice invoice = invoiceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada"));
+
+        if (data.getReferenceMonth() != null) {
+            invoice.setReferenceMonth(data.getReferenceMonth());
+        }
+
+        if (data.getTotalAmount() != null) {
+            invoice.setTotalAmount(data.getTotalAmount());
+        }
+
+        invoice.setPaid(data.isPaid());
+
+        Invoice invoices = invoiceRepository.save(invoice);
+        return InvoiceMapper.toDto(invoices);
     }
 }

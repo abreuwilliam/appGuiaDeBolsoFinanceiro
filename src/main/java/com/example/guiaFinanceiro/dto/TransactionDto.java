@@ -17,6 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class TransactionDto {
     private String description;
+    private Integer installments; // null ou 1 = compra à vista
 
     private BigDecimal amount;
 

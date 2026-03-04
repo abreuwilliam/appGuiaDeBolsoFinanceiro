@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     Optional<Invoice> findByCreditCardIdAndReferenceMonth(UUID creditCardId, LocalDate referenceMonth);
-    Optional<Invoice> findByCreditCardId(UUID creditCardId);
+    Optional<List<Invoice>> findByCreditCardId(UUID creditCardId);
 
     boolean existsByCreditCardAndReferenceMonth(CreditCard creditCard, LocalDate referenceMonth);
 
@@ -26,4 +27,18 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     List<Invoice> findByUsers_Id(@Param("userId") UUID userId);
 
     Optional<Invoice> findByCreditCardIdAndPaidFalse(UUID creditCardId);
+
+
+    void deleteByCreditCardId(UUID creditCardId);
+
+    @Query(value = "SELECT COALESCE(SUM(i.TOTAL_AMOUNT), 0) " +
+            "FROM INVOICE i " +
+            "INNER JOIN CREDIT_CARD cc ON i.CREDIT_CARD_ID = cc.ID " +
+            "WHERE cc.USERS_ID = :userId " +
+            "AND i.PAID = false " +
+            "AND MONTH(i.REFERENCE_MONTH) = MONTH(CURRENT_DATE()) " +
+            "AND YEAR(i.REFERENCE_MONTH) = YEAR(CURRENT_DATE())",
+            nativeQuery = true)
+    BigDecimal sumGastoCartaoByUserId(@Param("userId") UUID userId);
+
 }

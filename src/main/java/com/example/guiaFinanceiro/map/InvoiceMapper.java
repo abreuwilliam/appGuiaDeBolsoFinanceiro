@@ -5,15 +5,21 @@ import com.example.guiaFinanceiro.entites.CreditCard;
 import com.example.guiaFinanceiro.entites.Invoice;
 
 public class InvoiceMapper {
-    public static InvoiceDto toDto(Invoice invoice){
-    if(invoice == null) return null;
-    InvoiceDto invoiceDto = new InvoiceDto();
-    invoiceDto.setId(invoice.getId());
-    invoiceDto.setPaid(invoice.isPaid());
-    invoiceDto.setCreditCardId(invoice.getCreditCard().getId());
-    invoiceDto.setReferenceMonth(invoice.getReferenceMonth());
-    invoiceDto.setTotalAmount(invoice.getTotalAmount());
-    return invoiceDto;
+    public static InvoiceDto toDto(Invoice invoice) {
+        InvoiceDto dto = new InvoiceDto();
+        dto.setId(invoice.getId());
+        dto.setTotalAmount(invoice.getTotalAmount());
+        dto.setPaid(invoice.isPaid());
+        dto.setReferenceMonth(invoice.getReferenceMonth());
+
+        // CORREÇÃO: Só pega o ID se o cartão não for nulo
+        if (invoice.getCreditCard() != null) {
+            dto.setCreditCardId(invoice.getCreditCard().getId());
+        } else {
+            dto.setCreditCardId(null);
+        }
+
+        return dto;
     }
     public static Invoice toEntity(InvoiceDto invoiceDto, CreditCard creditCard){
         if(invoiceDto == null) return null;

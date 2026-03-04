@@ -1,11 +1,11 @@
 package com.example.guiaFinanceiro.service;
 
 import com.example.guiaFinanceiro.dto.AccountDto;
-import com.example.guiaFinanceiro.entites.Account;
-import com.example.guiaFinanceiro.entites.AccountType;
-import com.example.guiaFinanceiro.entites.Users;
+import com.example.guiaFinanceiro.dto.TransactionDto;
+import com.example.guiaFinanceiro.entites.*;
 import com.example.guiaFinanceiro.map.AccountMapper;
 import com.example.guiaFinanceiro.repository.AccountRepository;
+import com.example.guiaFinanceiro.repository.TransactionRepository;
 import com.example.guiaFinanceiro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,18 +26,32 @@ public class AccountService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired TransactionService transactionService;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
     @Transactional
     public AccountDto createAccount(AccountDto accountDto) {
         Users user = userRepository.findById(accountDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         Account account = new Account();
         account.setId(accountDto.getId());
-        account.setBalance(accountDto.getBalance());
+        account.setBalance(BigDecimal.ZERO);
         account.setName(accountDto.getName());
         account.setType(accountDto.getType());
         account.setUsers(user);
+
         try {
             Account savedAccount = accountRepository.save(account);
+            TransactionDto transactionDto = new TransactionDto();
+            transactionDto.setDestinationAccount(savedAccount.getId());
+            transactionDto.setType(TransactionType.DEPOSIT);
+            transactionDto.setCategory(TransactionCategory.DEPOSITO);
+            transactionDto.setAmount(accountDto.getBalance());
+            transactionDto.setDate(LocalDate.now());
+            transactionService.createTransaction(transactionDto);
+
             return AccountMapper.toDto(savedAccount);
         } catch (Exception e) {
             throw new RuntimeException("Erro ao salvar a conta: " + e.getMessage());
@@ -61,6 +76,11 @@ public class AccountService {
 
     @Transactional
     public void deleteAccount(UUID accountId) {
+
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new EntityNotFoundException("Conta não encontrada"));
+
+        transactionRepository.deleteAllByAccountId(accountId);
+
         if (!accountRepository.existsById(accountId)) {
             throw new RuntimeException("Conta não encontrada para o ID: " + accountId);
         }

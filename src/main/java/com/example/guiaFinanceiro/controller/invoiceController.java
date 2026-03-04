@@ -20,7 +20,7 @@ public class invoiceController {
     private InvoiceService invoiceService;
 
     @PostMapping
-    public ResponseEntity<InvoiceDto> postInvoice(InvoiceDto invoiceDto){
+    public ResponseEntity<InvoiceDto> postInvoice(@Valid @RequestBody InvoiceDto invoiceDto){
         InvoiceDto postInvoice = invoiceService.createInvoice(invoiceDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(postInvoice);
     }
@@ -40,9 +40,21 @@ public class invoiceController {
         invoiceService.payInvoice(invoiceId, accountId);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/open/{creditCardId}")
     public ResponseEntity<InvoiceDto> getOpenInvoice(@PathVariable UUID creditCardId) {
         InvoiceDto openInvoice = invoiceService.findOpenInvoiceByCard(creditCardId);
         return ResponseEntity.ok(openInvoice);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        invoiceService.deleteInvoice(id);
+        return ResponseEntity.noContent().build();
+    }
+    @PatchMapping("/{id}")
+    public ResponseEntity<InvoiceDto> update(@PathVariable UUID id, @RequestBody InvoiceDto data) {
+        InvoiceDto updatedInvoice = invoiceService.updateInvoicePartially(id, data);
+        return ResponseEntity.ok(updatedInvoice);
     }
 }

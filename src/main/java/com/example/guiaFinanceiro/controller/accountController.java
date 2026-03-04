@@ -41,6 +41,7 @@ public class accountController {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build();
     }
+
     @PatchMapping("/{id}")
     public ResponseEntity<AccountDto> update(@PathVariable UUID id, @RequestBody AccountDto data) {
         AccountDto updatedAccount = accountService.updateAccountPartially(id, data);

@@ -8,6 +8,7 @@ import com.example.guiaFinanceiro.map.AccountMapper;
 import com.example.guiaFinanceiro.map.CreditCardMapper;
 import com.example.guiaFinanceiro.map.InvoiceMapper;
 import com.example.guiaFinanceiro.repository.CreditCardRepository;
+import com.example.guiaFinanceiro.repository.InvoiceRepository;
 import com.example.guiaFinanceiro.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -29,6 +30,9 @@ public class CreditCardService {
 
     @Autowired
     private InvoiceService invoiceService;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Transactional
     public CreditCardDto createCreditCard(CreditCardDto creditCardDto) {
@@ -67,10 +71,27 @@ public class CreditCardService {
 
     @Transactional
     public void deleteCreditCard(UUID creditCardId) {
-        if (!creditCardRepository.existsById(creditCardId)) {
-            throw new RuntimeException("Conta não encontrada para o ID: " + creditCardId);
+        // 1. Busca o cartão e suas faturas
+        CreditCard creditCard = creditCardRepository.findById(creditCardId)
+                .orElseThrow(() -> new RuntimeException("Cartão não encontrado para o ID: " + creditCardId));
+
+        // 2. Busca todas as faturas associadas a este cartão
+        List<Invoice> invoices = invoiceRepository.findByCreditCardId(creditCardId).orElseThrow(() -> new EntityNotFoundException("Conta não encontrada"));
+
+        // 3. A TRAVA: Verifica se existe alguma fatura com valor maior que zero
+        // Isso garante que se houver histórico de gastos, o cartão não seja apagado
+        boolean temGastos = invoices.stream()
+                .anyMatch(invoice -> invoice.getTotalAmount().compareTo(BigDecimal.ZERO) > 0);
+
+        if (temGastos) {
+            throw new RuntimeException("Não é possível apagar um cartão que possui faturas com gastos registrados. Considere desativá-lo.");
         }
-        creditCardRepository.deleteById(creditCardId);
+
+        // 4. Se o valor total de todas as faturas for 0, apaga as faturas vazias primeiro
+        invoiceRepository.deleteAll(invoices);
+
+        // 5. Por fim, apaga o cartão
+        creditCardRepository.delete(creditCard);
     }
 
     @Transactional

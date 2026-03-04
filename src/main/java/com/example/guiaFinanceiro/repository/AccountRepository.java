@@ -17,4 +17,6 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     BigDecimal sumBalanceByUserId(@Param("userId") UUID userId);
 
     List<Account> findByUsers_Id(UUID usersId);
+
+
 }
