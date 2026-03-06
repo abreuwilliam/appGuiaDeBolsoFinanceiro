@@ -7,13 +7,15 @@ O Guia de Bolso permite registrar gastos, acompanhar saldo disponível, visualiz
 O objetivo do projeto é oferecer uma ferramenta prática de controle financeiro, além de servir como estudo de arquitetura backend e desenvolvimento de aplicações completas.
 
 📱 Demonstração
-Dashboard
 
 
+
+![imagem 2](https://github.com/user-attachments/assets/4e699e00-9109-45d3-a9a4-27b7d02cd6ea)
 
 
 Relatórios Financeiros
 
+![imagem](https://github.com/user-attachments/assets/890ab80c-dbe7-4b8e-b492-f91562dd56f3)
 
 
 
