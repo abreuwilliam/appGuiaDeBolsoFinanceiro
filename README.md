@@ -102,7 +102,7 @@ A aplicação segue a arquitetura **em camadas**:
 ### 1. Clonar o repositório
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/abreuwilliam/appGuiaDeBolsoFinanceiro.git
 cd appGuiaDeBolsoFinanceiro
 ```
 
