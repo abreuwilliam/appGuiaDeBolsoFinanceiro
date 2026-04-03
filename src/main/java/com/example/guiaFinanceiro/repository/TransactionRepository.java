@@ -172,7 +172,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "FROM ( " +
             "  SELECT " +
             "    COALESCE(SUM(CASE WHEN MONTH(t.DATE) = MONTH(CURRENT_DATE()) AND YEAR(t.DATE) = YEAR(CURRENT_DATE()) THEN t.AMOUNT ELSE 0 END), 0) as mes_atual, " +
-            "    COALESCE(SUM(CASE WHEN MONTH(t.DATE) = MONTH(DATEADD('MONTH', -1, CURRENT_DATE())) AND YEAR(t.DATE) = YEAR(DATEADD('MONTH', -1, CURRENT_DATE())) THEN t.AMOUNT ELSE 0 END), 0) as mes_anterior " +
+            "    COALESCE(SUM(CASE WHEN MONTH(t.DATE) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) AND YEAR(t.DATE) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) THEN t.AMOUNT ELSE 0 END), 0) as mes_anterior " +
             "  FROM TRANSACTION t " +
             "  LEFT JOIN ACCOUNT acc ON t.SOURCE_ACCOUNT_ID = acc.ID " +
             "  LEFT JOIN CREDIT_CARD cc ON t.CREDIT_CARD_ID = cc.ID " +

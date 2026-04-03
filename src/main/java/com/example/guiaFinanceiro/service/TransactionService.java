@@ -3,15 +3,9 @@ package com.example.guiaFinanceiro.service;
 import com.example.guiaFinanceiro.dto.GastoRecorrenteProjection;
 import com.example.guiaFinanceiro.dto.MonthlyHistory;
 import com.example.guiaFinanceiro.dto.TransactionDto;
-import com.example.guiaFinanceiro.entites.Account;
-import com.example.guiaFinanceiro.entites.CreditCard;
-import com.example.guiaFinanceiro.entites.Invoice;
-import com.example.guiaFinanceiro.entites.Transaction;
+import com.example.guiaFinanceiro.entites.*;
 import com.example.guiaFinanceiro.map.TransactionMapper;
-import com.example.guiaFinanceiro.repository.AccountRepository;
-import com.example.guiaFinanceiro.repository.CreditCardRepository;
-import com.example.guiaFinanceiro.repository.InvoiceRepository;
-import com.example.guiaFinanceiro.repository.TransactionRepository;
+import com.example.guiaFinanceiro.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +30,9 @@ public class TransactionService {
 
     @Autowired
     private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private FinancialGoalRepository financialGoalRepository;
 
     @Transactional
     public TransactionDto createTransaction(TransactionDto transactionDto) {
@@ -124,7 +121,9 @@ public class TransactionService {
         if (transactionDto.getSourceAccount() != null) {
             Account source = accountRepository.findById(transactionDto.getSourceAccount())
                     .orElseThrow(() -> new RuntimeException("Conta de origem não encontrada"));
-
+            if (source.getBalance().compareTo(transactionDto.getAmount()) < 0) {
+                throw new RuntimeException("Saldo insuficiente! Saldo atual: R$ " + source.getBalance());
+            }
             source.setBalance(source.getBalance().subtract(transactionDto.getAmount()));
             accountRepository.save(source);
 
@@ -139,6 +138,37 @@ public class TransactionService {
             accountRepository.save(destination);
 
             transaction.setDestinationAccount(destination);
+        }
+
+        if (transactionDto.getFinancialGoal() != null) {
+
+            FinancialGoal financialGoal = financialGoalRepository
+                    .findById(transactionDto.getFinancialGoal())
+                    .orElseThrow(() -> new RuntimeException("Objetivo financeiro não encontrado"));
+
+            if (financialGoal.isCompleted()) {
+                throw new RuntimeException("Este objetivo financeiro já foi concluído.");
+            }
+
+            BigDecimal restante = financialGoal.getTargetAmount()
+                    .subtract(financialGoal.getCurrentAmount());
+
+            if (transactionDto.getAmount().compareTo(restante) > 0) {
+                throw new RuntimeException("Valor excede o necessário para completar a meta.");
+            }
+
+            BigDecimal novoValor = financialGoal.getCurrentAmount()
+                    .add(transactionDto.getAmount());
+
+            if (novoValor.compareTo(financialGoal.getTargetAmount()) >= 0) {
+                financialGoal.setCompleted(true);
+            } else {
+                financialGoal.setCurrentAmount(novoValor);
+            }
+
+            financialGoalRepository.save(financialGoal);
+
+            transaction.setFinancialGoal(financialGoal);
         }
 
         try {

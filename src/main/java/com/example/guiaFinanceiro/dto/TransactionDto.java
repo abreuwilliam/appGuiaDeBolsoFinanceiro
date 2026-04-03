@@ -1,9 +1,6 @@
 package com.example.guiaFinanceiro.dto;
 
-import com.example.guiaFinanceiro.entites.Account;
-import com.example.guiaFinanceiro.entites.CreditCard;
-import com.example.guiaFinanceiro.entites.TransactionCategory;
-import com.example.guiaFinanceiro.entites.TransactionType;
+import com.example.guiaFinanceiro.entites.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,4 +29,6 @@ public class TransactionDto {
     private UUID destinationAccount;
 
     private UUID creditCardId;
+
+    private UUID financialGoal;
 }

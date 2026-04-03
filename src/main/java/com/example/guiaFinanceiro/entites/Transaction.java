@@ -45,4 +45,7 @@ public class Transaction {
 
     @ManyToOne
     private CreditCard creditCard;
+
+    @ManyToOne
+    private FinancialGoal financialGoal;
 }
