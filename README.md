@@ -13,25 +13,22 @@ Uma aplicação backend em **Spring Boot 4.0.3** para gerenciar finanças pessoa
 - [Endpoints da API](#endpoints-da-api)
 - [Modelos de Dados](#modelos-de-dados)
 - [Perfis de Configuração](#perfis-de-configuração)
-
 ## 🎯 Visão Geral
 
 O **Guia de Bolso Financeiro** é uma solução completa para gestão de finanças pessoais que permite:
 
-✅ Criar e gerenciar contas bancárias (Corrente e Poupança)
-✅ Registro de receitas e despesas
-✅ Controle de fluxo de caixa
-✅ Organização e análise de gastos por categoria
-✅ Visualização da evolução financeira mensal
-✅ Controle de saldo e histórico de transações
-✅ Importação de comprovantes em PDF e Imagem (Pix, cartão, etc.)
-✅ Extração automática de dados relevantes (ex: valor da transação)
-✅ Validação e edição dos dados antes do registro
-✅ Métricas de comportamento financeiro (ex: dias sem gastos)
-✅ Score de saúde financeira baseado no padrão de consumo
-✅ Geração de análises e recomendações automáticas
-
-## 🏗️ Arquitetura
+✅ Criar e gerenciar contas bancárias (Corrente e Poupança)  
+✅ Registro de receitas e despesas  
+✅ Controle de fluxo de caixa  
+✅ Organização e análise de gastos por categoria  
+✅ Visualização da evolução financeira mensal  
+✅ Controle de saldo e histórico de transações  
+✅ Importação de comprovantes em PDF e Imagem (Pix, cartão, etc.)  
+✅ Extração automática de dados relevantes (ex: valor da transação)  
+✅ Validação e edição dos dados antes do registro  
+✅ Métricas de comportamento financeiro (ex: dias sem gastos)  
+✅ Score de saúde financeira baseado no padrão de consumo  
+✅ Geração de análises e recomendações automáticas 
 
 A aplicação segue a arquitetura **em camadas**:
 
