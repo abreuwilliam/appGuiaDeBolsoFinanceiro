@@ -18,7 +18,7 @@ Uma aplicação backend em **Spring Boot 4.0.3** para gerenciar finanças pessoa
 
 O **Guia de Bolso Financeiro** é uma solução completa para gestão de finanças pessoais que permite:
 
-✅ Criar e gerenciar contas bancárias (Corrente e Poupança)  
+✅ Criar e gerenciar contas bancárias (Corrente e Poupança)
 ✅Registro de receitas e despesas
 ✅Controle de fluxo de caixa
 ✅Organização e análise de gastos por categoria
