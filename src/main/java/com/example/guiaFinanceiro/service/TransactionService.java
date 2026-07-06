@@ -1,5 +1,6 @@
 package com.example.guiaFinanceiro.service;
 
+import com.example.guiaFinanceiro.dto.FluxoCaixaMensalProjection;
 import com.example.guiaFinanceiro.dto.GastoRecorrenteProjection;
 import com.example.guiaFinanceiro.dto.MonthlyHistory;
 import com.example.guiaFinanceiro.dto.TransactionDto;
@@ -49,12 +50,10 @@ public class TransactionService {
 
             BigDecimal amount = transactionDto.getAmount();
 
-            // Normaliza o número de parcelas (mínimo 1)
             Integer installments = (transactionDto.getInstallments() == null || transactionDto.getInstallments() < 1)
                     ? 1
                     : transactionDto.getInstallments();
 
-            // 1. Validação e Atualização do Limite
             BigDecimal novoLimite = creditCard.getAvailableLimit().subtract(amount);
             if (novoLimite.compareTo(BigDecimal.ZERO) < 0) {
                 throw new RuntimeException("Limite insuficiente! Limite atual: R$ " + creditCard.getAvailableLimit());
@@ -63,15 +62,13 @@ public class TransactionService {
             creditCard.setAvailableLimit(novoLimite);
             creditCardRepository.save(creditCard);
 
-            // 2. Cálculo do valor de cada parcela
             BigDecimal installmentValue = amount.divide(
                     BigDecimal.valueOf(installments),
                     2,
                     RoundingMode.HALF_UP
             );
 
-            // 3. Lógica de busca e desvio para faturas pagas
-            // Descobrimos qual o primeiro mês disponível (não pago) para começar as cobranças
+
             int monthOffset = 0;
             boolean foundAvailableMonth = false;
 
@@ -82,11 +79,9 @@ public class TransactionService {
                         .findByCreditCardIdAndReferenceMonth(creditCard.getId(), checkMonth)
                         .stream().findFirst().orElse(null);
 
-                // Se a fatura não existe ou existe e NÃO está paga, achamos o mês de início
                 if (currentCheck == null || !currentCheck.isPaid()) {
                     foundAvailableMonth = true;
                 } else {
-                    // Se a fatura existe e está PAGA, tentamos o próximo mês
                     monthOffset++;
                 }
             }
@@ -108,7 +103,6 @@ public class TransactionService {
                             return invoiceRepository.save(newInvoice);
                         });
 
-                // Adiciona o valor da parcela
                 invoice.setTotalAmount(invoice.getTotalAmount().add(installmentValue));
                 invoiceRepository.save(invoice);
             }
@@ -181,10 +175,8 @@ public class TransactionService {
 
     @Transactional()
     public BigDecimal purchaseGastoTotal(UUID userId) {
-        // Gastos em dinheiro/débito (Transaction onde credit_card_id IS NULL)
         BigDecimal gastoConta = transactionRepository.sumGastoContaByUserId(userId);
 
-        // Gastos em parcelas do mês (Invoice onde PAID = false)
         BigDecimal gastoCartao = invoiceRepository.sumGastoCartaoByUserId(userId);
 
         return gastoConta.add(gastoCartao);
@@ -241,17 +233,13 @@ public class TransactionService {
 
             Map<String, Object> response = new LinkedHashMap<>();
 
-            // Preencher os últimos 6 meses (incluindo meses sem dados)
             List<Map<String, Object>> monthlyData = fillMissingMonths(history);
             response.put("monthlyData", monthlyData);
 
-            // Análise de tendência
             response.put("trend", analyzeTrend(monthlyData));
 
-            // Média dos gastos
             response.put("averageExpense", calculateAverage(monthlyData, "totalGastos"));
 
-            // Melhor e pior mês
             response.put("bestMonth", findBestMonth(monthlyData));
             response.put("worstMonth", findWorstMonth(monthlyData));
 
@@ -267,14 +255,12 @@ public class TransactionService {
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        // Criar mapa dos dados existentes
         Map<String, MonthlyHistory> historyMap = history.stream()
                 .collect(Collectors.toMap(
                         h -> h.getAno() + "-" + h.getMes(),
                         h -> h
                 ));
 
-        // Preencher últimos 6 meses
         for (int i = 5; i >= 0; i--) {
             LocalDate date = today.minusMonths(i);
             int ano = date.getYear();
@@ -309,7 +295,6 @@ public class TransactionService {
                 .map(m -> (BigDecimal) m.get("saldoMensal"))
                 .collect(Collectors.toList());
 
-        // Verificar tendência dos últimos 3 meses
         if (balances.size() >= 3) {
             BigDecimal last = balances.get(balances.size() - 1);
             BigDecimal previous = balances.get(balances.size() - 2);
@@ -372,16 +357,18 @@ public class TransactionService {
         try {
             List<GastoRecorrenteProjection> gastos = transactionRepository.findGastosRecorrentes(userId);
 
-            // Log para conferência no console do Spring Boot
             System.out.println("Gastos recorrentes encontrados para o usuário " + userId + ": " + gastos.size());
 
             return gastos != null ? gastos : new ArrayList<>();
         } catch (Exception e) {
-            // Captura o erro para evitar o Erro 500 no Front-end
             System.err.println("CRÍTICO: Erro ao processar gastos recorrentes: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+    @Transactional
+    public FluxoCaixaMensalProjection getFluxodeCaixaMesDias(UUID userId, int dia,int mes ){
+        return transactionRepository.buscarFluxoCaixaMensal(userId,dia,mes);
     }
 }
 

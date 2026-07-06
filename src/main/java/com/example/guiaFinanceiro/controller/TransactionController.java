@@ -1,8 +1,8 @@
 package com.example.guiaFinanceiro.controller;
 
+import com.example.guiaFinanceiro.dto.FluxoCaixaMensalProjection;
 import com.example.guiaFinanceiro.dto.GastoRecorrenteProjection;
 import com.example.guiaFinanceiro.dto.TransactionDto;
-import com.example.guiaFinanceiro.entites.Transaction;
 import com.example.guiaFinanceiro.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/transaction")
-public class transactionController {
+public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
@@ -88,16 +88,8 @@ public class transactionController {
     public ResponseEntity<Double> getHealthScore(@PathVariable UUID userId) {
         Double score = transactionService.getFinancialHealthScore(userId);
         return ResponseEntity.ok(score);
-        //o front você mostra:
-        //🟢 Até 50% → Saudável🟡 50–80% → Atenção🔴 Acima de 80% → Risco
+
     }
-    @RestController
-    @RequestMapping("/api/transactions")
-    public class TransactionController {
-
-        @Autowired
-        private TransactionService transactionService;
-
         @GetMapping("/variacaoMensal/{userId}")
         public ResponseEntity<BigDecimal> getVariacaoMensal(@PathVariable UUID userId) {
             return ResponseEntity.ok(transactionService.getVariacaoMensal(userId));
@@ -119,5 +111,14 @@ public class transactionController {
             List<GastoRecorrenteProjection>transactions = transactionService.getGastosRecorrentes(userId);
             return ResponseEntity.ok(transactions);
         }
+
+        @GetMapping("/fluxoCaixaPorMesDia/{userId}")
+        public ResponseEntity<FluxoCaixaMensalProjection>getFluxoCaixaMesDia(
+                @PathVariable UUID userId,
+                @RequestParam int dia,
+                @RequestParam int mes){
+            FluxoCaixaMensalProjection fluxoCaixaMensalProjection = transactionService.getFluxodeCaixaMesDias(userId,dia,mes);
+            return ResponseEntity.ok(fluxoCaixaMensalProjection);
+        }
     }
-}
+

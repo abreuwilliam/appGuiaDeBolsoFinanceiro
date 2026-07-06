@@ -1,5 +1,6 @@
 package com.example.guiaFinanceiro.repository;
 
+import com.example.guiaFinanceiro.dto.FluxoCaixaMensalProjection;
 import com.example.guiaFinanceiro.dto.GastoRecorrenteProjection;
 import com.example.guiaFinanceiro.dto.MonthlyHistory;
 import com.example.guiaFinanceiro.entites.Account;
@@ -79,7 +80,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "AND YEAR(t.DATE) = YEAR(CURRENT_DATE()) " +
             "GROUP BY t.CATEGORY", nativeQuery = true)
     List<Object[]> findGastoPorCategoriaGrouped(@Param("userId") UUID userId);
-
     @Query(value = "SELECT " +
             "    res.ano as ano, " +
             "    res.mes as mes, " +
@@ -97,7 +97,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "    LEFT JOIN ACCOUNT acc_s ON t.SOURCE_ACCOUNT_ID = acc_s.ID " +
             "    LEFT JOIN ACCOUNT acc_d ON t.DESTINATION_ACCOUNT_ID = acc_d.ID " +
             "    WHERE (acc_s.USERS_ID = :userId OR acc_d.USERS_ID = :userId) " +
-            "    AND t.DATE >= DATEADD('MONTH', -5, CURRENT_DATE()) " +
+            "    AND t.DATE >= DATE_SUB(CURRENT_DATE, INTERVAL 5 MONTH) " + // Correção MySQL
             "    GROUP BY YEAR(t.DATE), MONTH(t.DATE) " +
             " " +
             "    UNION ALL " +
@@ -111,7 +111,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "    FROM INVOICE i " +
             "    INNER JOIN CREDIT_CARD cc ON i.CREDIT_CARD_ID = cc.ID " +
             "    WHERE cc.USERS_ID = :userId " +
-            "    AND i.REFERENCE_MONTH >= DATEADD('MONTH', -5, CURRENT_DATE()) " +
+            "    AND i.REFERENCE_MONTH >= DATE_SUB(CURRENT_DATE, INTERVAL 5 MONTH) " + // Correção MySQL
             "    GROUP BY YEAR(i.REFERENCE_MONTH), MONTH(i.REFERENCE_MONTH) " +
             ") res " +
             "GROUP BY res.ano, res.mes " +
@@ -229,11 +229,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             "    LEFT JOIN ACCOUNT a2 ON sub.SOURCE_ACCOUNT_ID = a2.ID " +
             "    LEFT JOIN CREDIT_CARD c2 ON sub.CREDIT_CARD_ID = c2.ID " +
             "    WHERE (a2.USERS_ID = :userId OR c2.USERS_ID = :userId) " +
-            "    AND sub.DATE >= DATEADD('MONTH', -3, CURRENT_DATE()) " +
-            "    GROUP BY sub.CATEGORY HAVING COUNT(DISTINCT MONTH(sub.DATE)) >= 2 " +
+            "    AND sub.DATE >= DATE_SUB(CURRENT_DATE, INTERVAL 3 MONTH) " + // CORREÇÃO AQUI
+            "    GROUP BY sub.CATEGORY " +
+            "    HAVING COUNT(DISTINCT MONTH(sub.DATE)) >= 2 " +
             ") " +
-            "AND MONTH(t.DATE) = MONTH(CURRENT_DATE()) " +
-            "AND YEAR(t.DATE) = YEAR(CURRENT_DATE())", nativeQuery = true)
+            "AND MONTH(t.DATE) = MONTH(CURRENT_DATE) " +
+            "AND YEAR(t.DATE) = YEAR(CURRENT_DATE)", nativeQuery = true)
     List<GastoRecorrenteProjection> findGastosRecorrentes(@Param("userId") UUID userId);
 
     @Modifying
@@ -241,4 +242,43 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     @Query("DELETE FROM Transaction t WHERE t.sourceAccount.id = :accountId OR t.destinationAccount.id = :accountId")
     void deleteAllByAccountId(@Param("accountId") UUID accountId);
 
+    @Query(value =
+            "SELECT " +
+
+                    "COALESCE(SUM(CASE " +
+                    "WHEN t.TYPE IN ('INCOME', 'DEPOSIT') " +
+                    "THEN t.AMOUNT ELSE 0 END),0) as totalGanhosMes, " +
+
+                    "COALESCE(SUM(CASE " +
+                    "WHEN t.TYPE IN ('EXPENSE', 'CREDIT_CARD_PURCHASE') " +
+                    "THEN t.AMOUNT ELSE 0 END),0) as totalGastosMes, " +
+
+                    "COALESCE(SUM(CASE " +
+                    "WHEN t.TYPE IN ('INCOME', 'DEPOSIT') " +
+                    "THEN t.AMOUNT " +
+                    "ELSE -t.AMOUNT END),0) as saldoMes, " +
+
+                    "COALESCE(SUM(CASE " +
+                    "WHEN t.TYPE IN ('EXPENSE', 'CREDIT_CARD_PURCHASE') " +
+                    "AND DAY(t.DATE) = :dia " +
+                    "THEN t.AMOUNT ELSE 0 END),0) as gastosDia " +
+
+                    "FROM `TRANSACTION` t " +
+
+                    "LEFT JOIN ACCOUNT acc " +
+                    "ON t.SOURCE_ACCOUNT_ID = acc.ID " +
+
+                    "LEFT JOIN CREDIT_CARD cc " +
+                    "ON t.CREDIT_CARD_ID = cc.ID " +
+
+                    "WHERE (acc.USERS_ID = :userId " +
+                    "OR cc.USERS_ID = :userId) " +
+
+                    "AND MONTH(t.DATE) = :mes",
+            nativeQuery = true)
+    FluxoCaixaMensalProjection buscarFluxoCaixaMensal(
+            @Param("userId") UUID userId,
+            @Param("dia") Integer dia,
+            @Param("mes") Integer mes
+    );
 }

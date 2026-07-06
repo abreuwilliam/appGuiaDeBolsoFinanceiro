@@ -3,7 +3,8 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+mysql_data/
+docker-compose.yml
 ### STS ###
 .apt_generated
 .classpath
@@ -12,7 +13,9 @@ target/
 .settings
 .springBeans
 .sts4-cache
-
+src/main/resources/application.properties
+src/main/resources/application-prod.properties
+src/main/resources/application-test.properties
 ### IntelliJ IDEA ###
 .idea
 *.iws

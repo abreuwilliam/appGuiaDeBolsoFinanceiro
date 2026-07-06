@@ -1,7 +1,7 @@
 package com.example.guiaFinanceiro.entites;
 
 public enum AccountType {
-    Current,
+    CURRENT,
     SAVINGS,
     INVESTMENT
 }
